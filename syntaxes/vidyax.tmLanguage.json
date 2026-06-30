@@ -1,0 +1,116 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Vidyax",
+  "scopeName": "source.vidyax",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#function-def"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#builtins"
+    },
+    {
+      "include": "#ai-module"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#function-call"
+    },
+    {
+      "include": "#assignment"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "match": "#.*$",
+      "name": "comment.line.number-sign.vidyax"
+    },
+    "strings": {
+      "name": "string.quoted.double.vidyax",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.vidyax"
+        }
+      ]
+    },
+    "function-def": {
+      "match": "\\b(func)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": {
+          "name": "storage.type.function.vidyax"
+        },
+        "2": {
+          "name": "entity.name.function.vidyax"
+        }
+      }
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(if|elif|else|rpt|for|in|break|continue|return|try|catch)\\b",
+          "name": "keyword.control.vidyax"
+        },
+        {
+          "match": "\\b(use|agent|go)\\b",
+          "name": "keyword.control.import.vidyax"
+        },
+        {
+          "match": "\\b(and|or|not)\\b",
+          "name": "keyword.operator.logical.vidyax"
+        }
+      ]
+    },
+    "constants": {
+      "match": "\\b(true|false|null)\\b",
+      "name": "constant.language.vidyax"
+    },
+    "builtins": {
+      "match": "\\b(print|ask|len|range|text|num|upper|lower|split|join|push|abs|sum|min|max|type|get)\\b",
+      "name": "support.function.builtin.vidyax"
+    },
+    "ai-module": {
+      "match": "\\b(ai)\\b",
+      "name": "support.class.vidyax"
+    },
+    "numbers": {
+      "match": "\\b\\d+(\\.\\d+)?\\b",
+      "name": "constant.numeric.vidyax"
+    },
+    "function-call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+      "name": "entity.name.function.call.vidyax"
+    },
+    "assignment": {
+      "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?=:)",
+      "captures": {
+        "1": {
+          "name": "variable.other.assignment.vidyax"
+        }
+      }
+    },
+    "operators": {
+      "match": "(==|!=|<=|>=|<|>|\\+|\\-|\\*|/|%|=|:)",
+      "name": "keyword.operator.vidyax"
+    }
+  }
+}

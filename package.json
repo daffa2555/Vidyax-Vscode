@@ -1,0 +1,36 @@
+{
+  "name": "vidyax",
+  "displayName": "Vidyax Language",
+  "description": "Syntax highlighting and editing support for the Vidyax programming language (.vx)",
+  "version": "1.0.0",
+  "publisher": "nadev",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "vidyax",
+        "aliases": [
+          "Vidyax",
+          "vidyax"
+        ],
+        "extensions": [
+          ".vx",
+          ".vax"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "vidyax",
+        "scopeName": "source.vidyax",
+        "path": "./syntaxes/vidyax.tmLanguage.json"
+      }
+    ]
+  }
+}
