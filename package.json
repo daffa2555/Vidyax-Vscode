@@ -2,26 +2,43 @@
   "name": "vidyax",
   "displayName": "Vidyax Language",
   "description": "Syntax highlighting and editing support for the Vidyax programming language (.vx)",
-  "version": "1.0.0",
+  "version": "1.0.3",
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:vidyax"],
   "publisher": "nadev",
+  "icon": "icon.png",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.60.0"
   },
   "categories": [
     "Programming Languages"
   ],
+  "keywords": [
+    "vidyax",
+    "vx",
+    "programming language",
+    "ai-first",
+    "interpreter"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daffa2555/Vidyax-Vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/daffa2555/Vidyax-Vscode/issues"
+  },
+  "homepage": "https://github.com/daffa2555/Vidyax",
+  "galleryBanner": {
+    "color": "#1A1630",
+    "theme": "dark"
+  },
   "contributes": {
     "languages": [
       {
         "id": "vidyax",
-        "aliases": [
-          "Vidyax",
-          "vidyax"
-        ],
-        "extensions": [
-          ".vx",
-          ".vax"
-        ],
+        "aliases": ["Vidyax", "vidyax"],
+        "extensions": [".vx", ".vax"],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -30,6 +47,35 @@
         "language": "vidyax",
         "scopeName": "source.vidyax",
         "path": "./syntaxes/vidyax.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "vidyax.run",
+        "title": "Run Vidyax Code",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "editor/title/run": [
+        {
+          "command": "vidyax.run",
+          "when": "resourceLangId == vidyax",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "vidyax.run",
+          "when": "resourceLangId == vidyax"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "vidyax.run",
+        "key": "ctrl+alt+r",
+        "when": "editorLangId == vidyax"
       }
     ]
   }
