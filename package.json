@@ -56,6 +56,16 @@
         "icon": "$(play)"
       }
     ],
+    "configuration": {
+      "title": "Vidyax",
+      "properties": {
+        "vidyax.path": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the 'vidyax' executable. Leave empty to auto-detect (~/.local/bin/vidyax, then PATH). Set this if live errors don't appear."
+        }
+      }
+    },
     "menus": {
       "editor/title/run": [
         {
