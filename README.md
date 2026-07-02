@@ -1,13 +1,25 @@
 # Vidyax for VS Code
 
-Syntax highlighting and editing support for the **Vidyax** programming language (`.vx`).
+Official language support for **Vidyax** — an AI-first programming language (`.vx`).
 
 ## Features
+- **Syntax highlighting** for `.vx` files
+- **Run button** (▶) — run your Vidyax file directly (Ctrl+Alt+R)
+- **Live error checking** — type errors are underlined as you type, before you run
 
-- Syntax highlighting: keywords, strings, numbers, comments, built-in functions, the `ai` module, function names, and assignment targets.
-- Line comments with `#`.
-- Auto-closing and surrounding pairs: `( )`, `[ ]`, `" "`.
-- Auto-indent after a line ending with `:` (blocks).
+## Requirements
+This extension needs the **Vidyax interpreter** installed and available on your
+PATH (the `vidyax` command). Without it, Run and live error checking won't work.
+
+Install Vidyax from: https://github.com/daffa2555/Vidyax
+
+## Usage
+1. Open or create a `.vx` file
+2. Write Vidyax code — errors show up live
+3. Press the ▶ button (or Ctrl+Alt+R) to run
+
+## About
+Built by NaDev. Vidyax is open source: https://github.com/daffa2555/Vidyax
 
 ## Install (no build needed)
 
