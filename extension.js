@@ -1,15 +1,15 @@
 const vscode = require('vscode');
-const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { LanguageClient, TransportKind } = require('vscode-languageclient/node');
 
-// Live error checking ("garis merah") -----------------------------------
-// Runs `vidyax check -`, feeds the document text via stdin, and turns the
-// JSON error array it prints into VS Code diagnostics.
+// The extension is a thin client: it launches `vidyax lsp` (the Language
+// Server that ships with Vidyax) and lets it provide diagnostics,
+// completion, hover, and document symbols. All the language smarts live
+// in the server, so the editor experience always matches the CLI.
 
-let diagnostics;            // DiagnosticCollection for the "vidyax" source
-const debounceTimers = new Map();  // per-document debounce timers (by URI string)
+let client;
 
 // Resolve how to invoke the Vidyax CLI. VS Code launched from a desktop
 // launcher often does NOT inherit ~/.local/bin on PATH, so relying on a
@@ -33,130 +33,68 @@ function resolveVidyaxCmd() {
     return 'vidyax';  // last resort: rely on PATH
 }
 
-function checkDocument(document) {
-    if (!document || document.languageId !== 'vidyax') {
-        return;
-    }
-
-    const source = document.getText();
-    let stdout = '';
-    let child;
-    try {
-        child = spawn(resolveVidyaxCmd(), ['check', '-']);
-    } catch (err) {
-        // vidyax not installed / cannot spawn: don't crash, just clear.
-        diagnostics.delete(document.uri);
-        return;
-    }
-
-    // If the process itself errors (e.g. ENOENT), clear and bail quietly.
-    child.on('error', () => {
-        diagnostics.delete(document.uri);
+function startClient(context) {
+    const command = resolveVidyaxCmd();
+    // `vidyax lsp` speaks LSP over stdio.
+    const serverOptions = {
+        run:   { command, args: ['lsp'], transport: TransportKind.stdio },
+        debug: { command, args: ['lsp'], transport: TransportKind.stdio },
+    };
+    const clientOptions = {
+        documentSelector: [{ scheme: 'file', language: 'vidyax' }],
+        outputChannelName: 'Vidyax Language Server',
+    };
+    client = new LanguageClient(
+        'vidyax', 'Vidyax Language Server', serverOptions, clientOptions);
+    // start() rejects if the server can't be spawned; surface it once
+    // instead of letting the promise go unhandled.
+    client.start().catch((err) => {
+        vscode.window.showWarningMessage(
+            'Vidyax: could not start the language server (' +
+            (err && err.message ? err.message : err) +
+            '). Set "vidyax.path" to your vidyax executable if needed.');
     });
-
-    child.stdout.on('data', (chunk) => { stdout += chunk.toString(); });
-
-    child.on('close', () => {
-        let errors;
-        try {
-            errors = JSON.parse(stdout);
-        } catch (e) {
-            // Bad / empty output: ignore, leave existing diagnostics untouched.
-            return;
-        }
-        if (!Array.isArray(errors)) {
-            return;
-        }
-
-        const items = [];
-        for (const err of errors) {
-            // Vidyax lines are 1-based; VS Code lines are 0-based.
-            let line = (typeof err.line === 'number' ? err.line : 1) - 1;
-            if (line < 0) line = 0;
-            if (line >= document.lineCount) line = document.lineCount - 1;
-
-            // No column info -> underline the whole line.
-            const range = document.lineAt(line).range;
-            const diag = new vscode.Diagnostic(
-                range,
-                String(err.message || 'error'),
-                vscode.DiagnosticSeverity.Error
-            );
-            diag.source = 'vidyax';
-            items.push(diag);
-        }
-        diagnostics.set(document.uri, items);
-    });
-
-    // Feed the source to the checker over stdin.
-    try {
-        child.stdin.write(source);
-        child.stdin.end();
-    } catch (e) {
-        diagnostics.delete(document.uri);
-    }
+    context.subscriptions.push(client);
 }
 
-function scheduleCheck(document, delay) {
-    if (!document || document.languageId !== 'vidyax') {
-        return;
-    }
-    const key = document.uri.toString();
-    const existing = debounceTimers.get(key);
-    if (existing) {
-        clearTimeout(existing);
-    }
-    debounceTimers.set(key, setTimeout(() => {
-        debounceTimers.delete(key);
-        checkDocument(document);
-    }, delay));
-}
-
-function activate (context) {
-    let disposable = vscode.commands.registerCommand('vidyax.run', function() {
+function activate(context) {
+    // Command: run the current file in a terminal (unchanged).
+    const runCmd = vscode.commands.registerCommand('vidyax.run', function () {
         const editor = vscode.window.activeTextEditor;
-        if (!editor){
+        if (!editor) {
             vscode.window.showErrorMessage('No file is open');
             return;
         }
         editor.document.save();
         const filePath = editor.document.fileName;
-
         let terminal = vscode.window.activeTerminal;
         if (!terminal) {
             terminal = vscode.window.createTerminal('Vidyax Terminal');
         }
         terminal.show();
         terminal.sendText(`vidyax "${filePath}"`);
-
-
     });
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(runCmd);
 
-    // --- live diagnostics ---
-    diagnostics = vscode.languages.createDiagnosticCollection('vidyax');
-    context.subscriptions.push(diagnostics);
+    // Command: restart the language server (handy after updating vidyax).
+    const restartCmd = vscode.commands.registerCommand(
+        'vidyax.restartServer', async function () {
+            if (client) {
+                await client.stop();
+            }
+            startClient(context);
+            vscode.window.showInformationMessage('Vidyax language server restarted.');
+        });
+    context.subscriptions.push(restartCmd);
 
-    // Check on open (no debounce needed).
-    context.subscriptions.push(
-        vscode.workspace.onDidOpenTextDocument((doc) => checkDocument(doc))
-    );
-    // Check while typing, debounced so we don't spawn on every keystroke.
-    context.subscriptions.push(
-        vscode.workspace.onDidChangeTextDocument((e) => scheduleCheck(e.document, 300))
-    );
-    // Check on save (immediate).
-    context.subscriptions.push(
-        vscode.workspace.onDidSaveTextDocument((doc) => checkDocument(doc))
-    );
-    // Drop diagnostics when a document is closed.
-    context.subscriptions.push(
-        vscode.workspace.onDidCloseTextDocument((doc) => diagnostics.delete(doc.uri))
-    );
-
-    // Check any Vidyax documents already open at activation.
-    vscode.workspace.textDocuments.forEach((doc) => checkDocument(doc));
+    startClient(context);
 }
 
-function deactivate() {}
+function deactivate() {
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
+}
+
 module.exports = { activate, deactivate };

@@ -1,8 +1,8 @@
 {
   "name": "vidyax",
   "displayName": "Vidyax Language",
-  "description": "Syntax highlighting and editing support for the Vidyax programming language (.vx)",
-  "version": "1.1.0",
+  "description": "Language support for Vidyax (.vx): syntax highlighting plus live diagnostics, completion, and hover via the built-in language server.",
+  "version": "1.2.0",
   "main": "./extension.js",
   "activationEvents": [
     "onLanguage:vidyax"
@@ -11,7 +11,7 @@
   "icon": "icon.png",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"
@@ -66,6 +66,10 @@
         "command": "vidyax.run",
         "title": "Run Vidyax Code",
         "icon": "$(play)"
+      },
+      {
+        "command": "vidyax.restartServer",
+        "title": "Vidyax: Restart Language Server"
       }
     ],
     "configuration": {
@@ -74,7 +78,7 @@
         "vidyax.path": {
           "type": "string",
           "default": "",
-          "description": "Absolute path to the 'vidyax' executable. Leave empty to auto-detect (~/.local/bin/vidyax, then PATH). Set this if live errors don't appear."
+          "description": "Absolute path to the 'vidyax' executable used to run the language server. Leave empty to auto-detect (~/.local/bin/vidyax, then PATH). Set this if diagnostics/completion don't appear."
         }
       }
     },
@@ -100,5 +104,8 @@
         "when": "editorLangId == vidyax"
       }
     ]
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.1.0"
   }
 }

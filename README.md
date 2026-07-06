@@ -5,7 +5,11 @@ Official language support for **Vidyax** — an AI-first programming language (`
 ## Features
 - **Syntax highlighting** for `.vx` files
 - **Run button** (▶) — run your Vidyax file directly (Ctrl+Alt+R)
-- **Live error checking** — type errors are underlined as you type, before you run
+- **Language server** — powered by `vidyax lsp`, so the editor always matches the CLI:
+  - **Live diagnostics** — errors underlined as you type
+  - **Completion** — keywords, all built-in functions (with docs), and names in your file
+  - **Hover** — signature and description for built-in functions
+  - **Outline** — functions and top-level variables in the symbol list
 
 ## Requirements
 This extension needs the **Vidyax interpreter** installed and available on your
@@ -62,8 +66,14 @@ syntaxes/vax.tmLanguage.json # the TextMate grammar (the actual highlighting rul
 install.sh                   # one-command installer
 ```
 
-## Notes
+## Building from source
 
-This is a declarative (grammar-only) extension, so it needs no Node.js, no npm,
-and no compilation — VS Code loads it directly. To publish it to the Marketplace
-later, package it with `vsce package` (requires Node.js).
+The language-server client needs its npm dependency installed first:
+
+```bash
+npm install          # fetches vscode-languageclient
+vsce package         # builds the .vsix (bundles node_modules)
+```
+
+Grammar highlighting still works without any of this; the language-server
+features (diagnostics, completion, hover) require the `vidyax` CLI on PATH.
