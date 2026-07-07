@@ -1,4 +1,5 @@
 .gitignore
 *.vsix
+V.svg
 tes.vx
 install.sh

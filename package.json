@@ -2,7 +2,7 @@
   "name": "vidyax",
   "displayName": "Vidyax Language",
   "description": "Language support for Vidyax (.vx): syntax highlighting plus live diagnostics, completion, and hover via the built-in language server.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "./extension.js",
   "activationEvents": [
     "onLanguage:vidyax"
